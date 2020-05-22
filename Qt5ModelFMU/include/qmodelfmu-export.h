@@ -1,0 +1,10 @@
+#ifndef     QMODELFMU_EXPORT_H
+#define     QMODELFMU_EXPORT_H
+
+#if defined (QMODELFMU_LIB)
+    #define QMODELFMU_EXPORT Q_DECL_EXPORT
+#else
+    #define QMODELFMU_EXPORT Q_DECL_IMPORT
+#endif
+
+#endif // QMODELFMU_EXPORT_H
