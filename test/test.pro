@@ -1,22 +1,27 @@
-DEFINES += QMODELFMU_LIB
+TEMPLATE = app
 
-TEMPLATE = lib
-
+QT += core
 QT -= gui
 
+CONFIG += console
 CONFIG += c++14
+CONFIG -= app_bundle
 
-TARGET = Qt5ModelFMU
+DEFINES += QT_DEPRECATED_WARNINGS
 
-DESTDIR = ../../lib
+DESTDIR = ../../bin
+
+TARGET = test
 
 CONFIG(debug, debug|release) {
 
-    TARGET = $$join(TARGET,,,d)
+    TARGET = $$join(TARGET,,,_d)
+
+    LIBS += -L../../lib -lQt5ModelFMUd
 
 } else {
 
-
+    LIBS += -L../../lib -lQt5ModelFMU
 }
 
 win32 {
@@ -31,6 +36,7 @@ unix {
 }
 
 INCLUDEPATH += ./include
+INCLUDEPATH += ../Qt5ModelFMU/include
 
 HEADERS += $$files(./include/*.h)
 SOURCES += $$files(./src/*.cpp)
