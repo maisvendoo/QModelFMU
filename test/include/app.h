@@ -3,7 +3,8 @@
 
 #include    <QCoreApplication>
 
-class QModelFMU;
+class       QModelFMU;
+class       QTimer;
 
 //------------------------------------------------------------------------------
 //
@@ -23,6 +24,22 @@ public:
 private:
 
     QModelFMU   *model;
+
+    QTimer      *timer;
+
+    int         interval;
+
+    double      t_start;
+
+    double      t_stop;
+
+    double      dt;
+
+    double      t;
+
+private slots:
+
+    void process();
 };
 
 #endif // APP_H

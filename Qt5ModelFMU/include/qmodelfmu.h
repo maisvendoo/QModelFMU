@@ -11,7 +11,7 @@
 #include    <qmodelfmu-export.h>
 #include    <fmi2-variable.h>
 
-class   QDir;
+class       QDir;
 
 //------------------------------------------------------------------------------
 //
@@ -31,6 +31,8 @@ public:
     void close();
 
     QVariant getVariable(QString name);
+
+    bool step(double t, double dt);
 
 private:
 

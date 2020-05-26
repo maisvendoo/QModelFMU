@@ -198,6 +198,14 @@ QVariant QModelFMU::getVariable(QString name)
 //------------------------------------------------------------------------------
 //
 //------------------------------------------------------------------------------
+bool QModelFMU::step(double t, double dt)
+{
+    return fmi2_import_do_step(fmu, t, dt, fmi2_true) == fmi2_status_ok;
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
 bool QModelFMU::load_fmi2(QString tmpPath)
 {
     fmu = fmi2_import_parse_xml(context,
@@ -282,9 +290,7 @@ bool QModelFMU::init_fmi2(fmi2_import_t *fmu)
         return false;
     }    
 
-    read_vars_list(fmu);
-
-    double phi = getVariable("revolute.phi").toDouble();
+    read_vars_list(fmu);    
 
     return true;
 }
