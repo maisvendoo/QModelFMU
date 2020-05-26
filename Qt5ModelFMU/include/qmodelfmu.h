@@ -8,6 +8,8 @@
 
 #include    <qmodelfmu-export.h>
 
+class   QDir;
+
 //------------------------------------------------------------------------------
 //
 //------------------------------------------------------------------------------
@@ -41,9 +43,17 @@ private:
 
     fmi2_callback_functions_t               callback_functions;
 
+    QString                                 instance_name;
+
+    QDir                                    *tmp_dir;
+
+    fmi2_import_variable_list_t             *var_list;
+
     bool load_fmi2(QString tmpPath);
 
     void close_fmi2();
+
+    bool init_fmi2(fmi2_import_t *fmu);
 };
 
 #endif // QMODELFMU_H

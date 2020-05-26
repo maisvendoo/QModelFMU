@@ -1,6 +1,7 @@
 #include    "qmodelfmu.h"
 
 #include    <QDir>
+#include    <QFileInfo>
 
 //------------------------------------------------------------------------------
 //
@@ -12,6 +13,9 @@ QModelFMU::QModelFMU(QObject *parent) : QObject(parent)
   , version(fmi_version_unknown_enu)
   , fmu(nullptr)
   , callback_functions(fmi2_callback_functions_t())
+  , instance_name("")
+  , tmp_dir(nullptr)
+  , var_list(nullptr)
 {
 
 }
@@ -56,9 +60,22 @@ bool QModelFMU::load(QString path)
     }
 
     path = QDir::toNativeSeparators(path);
+
+    QFileInfo file_info(path);
+    instance_name = file_info.baseName();
+
+    QString tmpDir = QDir::toNativeSeparators(tmpPath) + QDir::separator() + instance_name;
+
+    tmp_dir = new QDir(tmpDir);
+
+    if (!tmp_dir->exists())
+    {
+        tmp_dir->mkdir(tmpDir);
+    }
+
     version = fmi_import_get_fmi_version(context,
                                          path.toStdString().c_str(),
-                                         tmpPath.toStdString().c_str());
+                                         tmp_dir->path().toStdString().c_str());
 
     switch (version)
     {
@@ -108,6 +125,12 @@ void QModelFMU::close()
     }
 
     fmi_import_free_context(context);
+
+    if (tmp_dir->exists())
+    {
+        tmp_dir->removeRecursively();
+        delete tmp_dir;
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -143,7 +166,7 @@ bool QModelFMU::load_fmi2(QString tmpPath)
         return false;
     }
 
-    return true;
+    return init_fmi2(fmu);
 }
 
 //------------------------------------------------------------------------------
@@ -153,4 +176,53 @@ void QModelFMU::close_fmi2()
 {
     fmi2_import_destroy_dllfmu(fmu);
     fmi2_import_free(fmu);
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+bool QModelFMU::init_fmi2(fmi2_import_t *fmu)
+{
+    jm_status_enu_t status = fmi2_import_instantiate(fmu,
+                                                     instance_name.toStdString().c_str(),
+                                                     fmi2_cosimulation,
+                                                     nullptr,
+                                                     fmi2_false);
+
+    if (status == jm_status_error)
+    {
+        return false;
+    }
+
+    fmi2_status_t fmi_status = fmi2_import_setup_experiment(fmu,
+                                                            fmi2_true,
+                                                            1e-6,
+                                                            0.0,
+                                                            false,
+                                                            1.0);
+
+    if (fmi_status != fmi2_status_ok)
+    {
+        return false;
+    }
+
+    fmi_status = fmi2_import_enter_initialization_mode(fmu);
+
+    if (fmi_status != fmi2_status_ok)
+    {
+        return false;
+    }
+
+    fmi_status = fmi2_import_exit_initialization_mode(fmu);
+
+    if (fmi_status != fmi2_status_ok)
+    {
+        return false;
+    }
+
+    var_list = fmi2_import_get_variable_list(fmu, 1);
+
+    fmi2_import_variable_t *v = fmi2_import_get_variable_by_name(fmu, "revolute.phi");
+
+    return true;
 }
