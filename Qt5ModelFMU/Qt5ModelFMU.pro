@@ -32,5 +32,6 @@ unix {
 
 INCLUDEPATH += ./include
 
-HEADERS += $$files(./include/*.h)
+HEADERS += $$files(./include/*.h) \
+    include/fmi2-variable.h
 SOURCES += $$files(./src/*.cpp)

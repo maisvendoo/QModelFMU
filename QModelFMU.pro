@@ -1,6 +1,6 @@
 TEMPLATE = subdirs
 
-CONFIG += ordred
+CONFIG += ordered
 
 SUBDIRS += ./Qt5ModelFMU
 SUBDIRS += ./test

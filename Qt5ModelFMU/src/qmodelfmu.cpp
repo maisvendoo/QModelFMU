@@ -14,8 +14,7 @@ QModelFMU::QModelFMU(QObject *parent) : QObject(parent)
   , fmu(nullptr)
   , callback_functions(fmi2_callback_functions_t())
   , instance_name("")
-  , tmp_dir(nullptr)
-  , var_list(nullptr)
+  , tmp_dir(nullptr)  
 {
 
 }
@@ -85,7 +84,7 @@ bool QModelFMU::load(QString path)
 
     case fmi_version_2_0_enu:
 
-        return load_fmi2(tmpPath);
+        return load_fmi2(tmp_dir->path());
 
     case fmi_version_unsupported_enu:
 
@@ -218,11 +217,34 @@ bool QModelFMU::init_fmi2(fmi2_import_t *fmu)
     if (fmi_status != fmi2_status_ok)
     {
         return false;
-    }
+    }    
 
-    var_list = fmi2_import_get_variable_list(fmu, 1);
-
-    fmi2_import_variable_t *v = fmi2_import_get_variable_by_name(fmu, "revolute.phi");
+    read_vars_list(fmu);
 
     return true;
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+void QModelFMU::read_vars_list(fmi2_import_t *fmu)
+{
+    fmi2_import_variable_list_t *var_list = fmi2_import_get_variable_list(fmu, 1);
+
+    if (var_list == nullptr)
+        return;
+
+    size_t vlist_size = fmi2_import_get_variable_list_size(var_list);
+
+    for (size_t i = 0; i < vlist_size; ++i)
+    {
+        fmi2_variable_t var;
+
+        fmi2_import_variable_t *v = fmi2_import_get_variable(var_list, i);
+        var.name = fmi2_import_get_variable_name(v);
+        var.description = fmi2_import_get_variable_description(v);
+        var.type = fmi2_import_get_variable_base_type(v);
+
+        vars.insert(var.name, var);
+    }
 }

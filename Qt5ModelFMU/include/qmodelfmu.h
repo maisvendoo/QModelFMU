@@ -2,11 +2,13 @@
 #define     QMODELFMU_H
 
 #include    <QObject>
+#include    <QMap>
 
 #include    <fmilib.h>
 #include    <JM/jm_portability.h>
 
 #include    <qmodelfmu-export.h>
+#include    <fmi2-variable.h>
 
 class   QDir;
 
@@ -47,13 +49,15 @@ private:
 
     QDir                                    *tmp_dir;
 
-    fmi2_import_variable_list_t             *var_list;
+    QMap<QString, fmi2_variable_t>          vars;
 
     bool load_fmi2(QString tmpPath);
 
     void close_fmi2();
 
     bool init_fmi2(fmi2_import_t *fmu);
+
+    void read_vars_list(fmi2_import_t *fmu);
 };
 
 #endif // QMODELFMU_H
