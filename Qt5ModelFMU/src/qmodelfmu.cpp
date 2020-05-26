@@ -135,6 +135,69 @@ void QModelFMU::close()
 //------------------------------------------------------------------------------
 //
 //------------------------------------------------------------------------------
+QVariant QModelFMU::getVariable(QString name)
+{
+    fmi2_variable_t var = vars.value(name, fmi2_variable_t());
+
+    if (var.v == nullptr)
+        return 0;
+
+    fmi2_value_reference_t vr = fmi2_import_get_variable_vr(var.v);
+
+    switch (var.type)
+    {
+    case fmi2_base_type_real:
+        {
+            fmi2_real_t value;
+            fmi2_status_t status = fmi2_import_get_real(fmu, &vr, 1, &value);
+
+            if (status == fmi2_status_error)
+                return 0;
+
+            return value;
+        }
+
+    case fmi2_base_type_int:
+    case fmi2_base_type_enum:
+        {
+            fmi2_integer_t value;
+            fmi2_status_t status = fmi2_import_get_integer(fmu, &vr, 1, &value);
+
+            if (status == fmi2_status_error)
+                return 0;
+
+            return value;
+        }
+
+    case fmi2_base_type_bool:
+        {
+            fmi2_boolean_t value;
+            fmi2_status_t status = fmi2_import_get_boolean(fmu, &vr, 1, &value);
+
+            if (status == fmi2_status_error)
+                return 0;
+
+            return value;
+        }
+
+    case fmi2_base_type_str:
+        {
+            fmi2_string_t value;
+            fmi2_status_t status = fmi2_import_get_string(fmu, &vr, 1, &value);
+
+            if (status == fmi2_status_error)
+                return 0;
+
+            return value;
+        }
+    }
+
+    return 0;
+}
+
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
 bool QModelFMU::load_fmi2(QString tmpPath)
 {
     fmu = fmi2_import_parse_xml(context,
@@ -221,6 +284,8 @@ bool QModelFMU::init_fmi2(fmi2_import_t *fmu)
 
     read_vars_list(fmu);
 
+    double phi = getVariable("revolute.phi").toDouble();
+
     return true;
 }
 
@@ -240,10 +305,10 @@ void QModelFMU::read_vars_list(fmi2_import_t *fmu)
     {
         fmi2_variable_t var;
 
-        fmi2_import_variable_t *v = fmi2_import_get_variable(var_list, i);
-        var.name = fmi2_import_get_variable_name(v);
-        var.description = fmi2_import_get_variable_description(v);
-        var.type = fmi2_import_get_variable_base_type(v);
+        var.v = fmi2_import_get_variable(var_list, i);
+        var.name = fmi2_import_get_variable_name(var.v);
+        var.description = fmi2_import_get_variable_description(var.v);
+        var.type = fmi2_import_get_variable_base_type(var.v);
 
         vars.insert(var.name, var);
     }

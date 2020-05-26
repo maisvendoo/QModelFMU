@@ -3,6 +3,7 @@
 
 #include    <QObject>
 #include    <QMap>
+#include    <QVariant>
 
 #include    <fmilib.h>
 #include    <JM/jm_portability.h>
@@ -28,6 +29,8 @@ public:
     bool load(QString path);
 
     void close();
+
+    QVariant getVariable(QString name);
 
 private:
 
